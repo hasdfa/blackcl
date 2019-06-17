@@ -135,7 +135,9 @@ func (k *Kernel) setArg(index int, arg interface{}) error {
 		return k.setArgFloat32(index, val)
 	case *Bytes:
 		return k.setArgBuffer(index, val.buf)
-	case *Vector:
+	case *VectorFloat32:
+		return k.setArgBuffer(index, val.buf)
+	case *VectorInt32:
 		return k.setArgBuffer(index, val.buf)
 	case *Image:
 		return k.setArgBuffer(index, val.buf)

@@ -17,45 +17,45 @@ import (
 	"unsafe"
 )
 
-//Vector is a memory buffer on device that holds []float32
-type Vector struct {
+//VectorInt32 is a memory buffer on device that holds []int32
+type VectorInt32 struct {
 	buf *buffer
 }
 
 //Length the length of the vector
-func (v *Vector) Length() int {
-	return v.buf.size / 4
+func (v *VectorInt32) Length() int {
+	return v.buf.size / 2
 }
 
 //Release releases the buffer on the device
-func (v *Vector) Release() error {
+func (v *VectorInt32) Release() error {
 	return v.buf.Release()
 }
 
-//NewVector allocates new vector buffer with specified length
-func (d *Device) NewVector(length int) (*Vector, error) {
-	size := length * 4
+//NewVectorInt32 allocates new vector buffer with specified length
+func (d *Device) NewVectorInt32(length int) (*VectorInt32, error) {
+	size := length * 2
 	buf, err := newBuffer(d, size)
 	if err != nil {
 		return nil, err
 	}
-	return &Vector{buf: &buffer{memobj: buf, device: d, size: size}}, nil
+	return &VectorInt32{buf: &buffer{memobj: buf, device: d, size: size}}, nil
 }
 
 //Copy copies the float32 data from host data to device buffer
 //it's a non-blocking call, channel will return an error or nil if the data transfer is complete
-func (v *Vector) Copy(data []float32) <-chan error {
+func (v *VectorInt32) Copy(data []int32) <-chan error {
 	if v.Length() != len(data) {
 		ch := make(chan error, 1)
 		ch <- errors.New("vector length not equal to data length")
 		return ch
 	}
-	return v.buf.copy(len(data)*4, unsafe.Pointer(&data[0]))
+	return v.buf.copy(len(data)*2, unsafe.Pointer(&data[0]))
 }
 
-//Data gets float32 data from device, it's a blocking call
-func (v *Vector) Data() ([]float32, error) {
-	data := make([]float32, v.buf.size/4)
+//Data gets int32 data from device, it's a blocking call
+func (v *VectorInt32) Data() ([]int32, error) {
+	data := make([]int32, v.buf.size/2)
 	err := toErr(C.clEnqueueReadBuffer(
 		v.buf.device.queue,
 		v.buf.memobj,
@@ -74,6 +74,6 @@ func (v *Vector) Data() ([]float32, error) {
 }
 
 //Map applies an map kernel on all elements of the vector
-func (v *Vector) Map(k *Kernel) <-chan error {
+func (v *VectorInt32) Map(k *Kernel) <-chan error {
 	return k.Global(v.Length()).Local(1).Run(v)
 }
