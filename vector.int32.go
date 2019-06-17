@@ -24,7 +24,7 @@ type VectorInt32 struct {
 
 //Length the length of the vector
 func (v *VectorInt32) Length() int {
-	return v.buf.size / 2
+	return v.buf.size / int32CLSize
 }
 
 //Release releases the buffer on the device
@@ -34,12 +34,26 @@ func (v *VectorInt32) Release() error {
 
 //NewVectorInt32 allocates new vector buffer with specified length
 func (d *Device) NewVectorInt32(length int) (*VectorInt32, error) {
-	size := length * 2
+	size := length * int32CLSize
 	buf, err := newBuffer(d, size)
 	if err != nil {
 		return nil, err
 	}
 	return &VectorInt32{buf: &buffer{memobj: buf, device: d, size: size}}, nil
+}
+
+//NewVectorInt32 allocates new vector buffer with specified length
+func (d *Device) NewVectorInt32With(data []int32) (*VectorInt32, error) {
+	size := len(data) * int32CLSize
+	buf, err := newBuffer(d, size)
+	if err != nil {
+		return nil, err
+	}
+	v := &VectorInt32{buf: &buffer{memobj: buf, device: d, size: size}}
+	if err = <-v.Copy(data); err != nil {
+		return nil, err
+	}
+	return v, nil
 }
 
 //Copy copies the float32 data from host data to device buffer
@@ -50,12 +64,12 @@ func (v *VectorInt32) Copy(data []int32) <-chan error {
 		ch <- errors.New("vector length not equal to data length")
 		return ch
 	}
-	return v.buf.copy(len(data)*2, unsafe.Pointer(&data[0]))
+	return v.buf.copy(len(data)*int32CLSize, unsafe.Pointer(&data[0]))
 }
 
 //Data gets int32 data from device, it's a blocking call
 func (v *VectorInt32) Data() ([]int32, error) {
-	data := make([]int32, v.buf.size/2)
+	data := make([]int32, v.buf.size/int32CLSize)
 	err := toErr(C.clEnqueueReadBuffer(
 		v.buf.device.queue,
 		v.buf.memobj,
