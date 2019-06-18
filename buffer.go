@@ -5,6 +5,7 @@ package blackcl
 #cgo !darwin LDFLAGS: -lOpenCL
 #cgo darwin LDFLAGS: -framework OpenCL
 
+#define CL_SILENCE_DEPRECATION
 #ifdef __APPLE__
 #include <OpenCL/opencl.h>
 #else

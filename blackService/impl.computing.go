@@ -25,6 +25,17 @@ func (s *blackService) Init() (err error) {
 	return
 }
 
+func (s *blackService) ParseRaw(source string) (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("%s", r)
+		}
+	}()
+
+	s.device.AddProgram(string(source))
+	return
+}
+
 func (s *blackService) ParseFolder(folder string) (err error) {
 	return filepath.Walk(folder, func(path string, info os.FileInfo, inputErr error) (err error) {
 		if info.IsDir() {

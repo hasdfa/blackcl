@@ -11,6 +11,7 @@ package blackcl
 #include <CL/cl.h>
 #endif
 
+#define CL_SILENCE_DEPRECATION
 #ifdef CL_VERSION_2_0
 int blackclOCLVersion = 2;
 #else

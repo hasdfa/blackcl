@@ -6,8 +6,10 @@ import (
 
 type IBlackService interface {
 	Init() error
-	ParseFolder(folder string) error
 	Release() error
+
+	ParseFolder(folder string) error
+	ParseRaw(source string) error
 
 	ExecI32(params *blackParams.RequestInt32) (data []int32, err error)
 	ExecI64(params *blackParams.RequestInt64) (data []int64, err error)
